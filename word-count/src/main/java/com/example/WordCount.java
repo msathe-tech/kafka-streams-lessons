@@ -16,6 +16,7 @@ import org.apache.kafka.streams.kstream.ForeachAction;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
+import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,7 @@ public class WordCount {
 
 		wordCountTable.toStream().foreach((s, aLong) -> System.out.println("word = " + s + ", value = " + aLong));
 
-		wordCountTable.toStream().to(OUTPUT_TOPIC);
+		wordCountTable.toStream().to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
 
 		Topology topology = builder.build();
 		System.out.println("Stream topology: " + topology.describe());
