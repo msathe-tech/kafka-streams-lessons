@@ -23,3 +23,13 @@ to change the PATH of Confluent bin directory.
 * From another shell - `kafka-console-consumer --topic word-count-output --from-beginning --bootstrap-server localhost:9092 --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer`
 * Run the WordCount.main()
 
+If you want to experiment with the application it is better to clean up the state and start from scratch. 
+* Stop the running application
+* Exit the kafka-console-consumer and kafka-console-producer
+* `./cleanup-word-count-topics.sh`
+* Make code changes you want to try 
+* Change value of `APP_VERSION` in WordCount.java
+* `./setup-word-count-topics.sh`
+* From one shell - `kafka-console-producer --broker-list localhost:9092 --topic word-count-input`
+* From another shell - `kafka-console-consumer --topic word-count-output --from-beginning --bootstrap-server localhost:9092 --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer`
+* Run the WordCount.main()
