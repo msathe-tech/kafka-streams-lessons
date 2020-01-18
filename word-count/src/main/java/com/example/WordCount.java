@@ -35,13 +35,15 @@ public class WordCount {
 	static final Logger log = LoggerFactory.getLogger(WordCount.class.getName());
 	public static void main(String[] args) {
 
+		final String APP_NAME = "word-count";
+		// Better to APP_VERSION if you change the code, the purpose is to change APPLICATION_ID_CONFIG
+		final String APP_VERSION = "2.6";
+
 		Properties props = new Properties();
-		props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, "word-count-2.6");
+		props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, APP_NAME.concat(APP_VERSION));
 		props.setProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 		props.setProperty(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class.getName());
 		props.setProperty(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class.getName());
-		props.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-
 
 		final String INPUT_TOPIC = "word-count-input";
 		final String OUTPUT_TOPIC = "word-count-output";
@@ -61,12 +63,11 @@ public class WordCount {
 //			}
 //		});
 
-		wordCountTable.toStream().foreach((s, aLong) -> System.out.println("word = " + s + ", value = " + aLong));
+		wordCountTable.toStream().foreach((s, aLong) -> log.info("word = {}, value = {}", s, aLong));
 
 		wordCountTable.toStream().to(OUTPUT_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
 
 		Topology topology = builder.build();
-		System.out.println("Stream topology: " + topology.describe());
 
 		KafkaStreams streams = new KafkaStreams(topology, props);
 		streams.start();
