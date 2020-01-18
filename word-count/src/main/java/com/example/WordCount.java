@@ -21,16 +21,27 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// kafka-topics --create --topic word-count-output --zookeeper localhost:2181 --partitions 1 --replication-factor 1
+// kafka-topics --create --topic word-count-input --zookeeper localhost:2181 --partitions 1 --replication-factor 1
+
+// kafka-console-producer --broker-list localhost:9092 --topic word-count-input
+// kafka-console-consumer --topic word-count-output --from-beginning --bootstrap-server localhost:9092 --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
+
+
+// Delete
+// kafka-topics --delete --topic word-count-input --zookeeper localhost:2181
+// kafka-topics --delete --topic word-count-output --zookeeper localhost:2181
 public class WordCount {
 	static final Logger log = LoggerFactory.getLogger(WordCount.class.getName());
 	public static void main(String[] args) {
 
 		Properties props = new Properties();
-		props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, "word-count");
+		props.setProperty(StreamsConfig.APPLICATION_ID_CONFIG, "word-count-2.6");
 		props.setProperty(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 		props.setProperty(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class.getName());
 		props.setProperty(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class.getName());
 		props.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
 
 		final String INPUT_TOPIC = "word-count-input";
 		final String OUTPUT_TOPIC = "word-count-output";
@@ -40,7 +51,6 @@ public class WordCount {
 		KTable<String, Long> wordCountTable = inputStream
 				.mapValues(text -> text.toLowerCase())
 				.flatMapValues(lowerCaseText -> Arrays.asList(lowerCaseText.split("\\W+")))
-				//.map((key, word) -> new KeyValue<>(word, word))
 				.groupBy((key, word) -> word)
 				.count(Materialized.<String, Long, KeyValueStore<Bytes, byte[]>>as("counts-store"));
 
@@ -61,6 +71,8 @@ public class WordCount {
 		KafkaStreams streams = new KafkaStreams(topology, props);
 		streams.start();
 		Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+
+
 
 	}
 }
